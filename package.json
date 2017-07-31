@@ -23,7 +23,10 @@
     "Scatter",
     "Pie"
   ],
-
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/recepkoseoglu/native-charts.git"
+  },
   "dependencies": {
     "react": "16.0.0-alpha.12",
     "react-native": "^0.46.1",
