@@ -1,0 +1,39 @@
+{
+  "name": "native-charts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "test": "node node_modules/jest/bin/jest.js --watch"
+  },
+  "jest": {
+    "preset": "jest-expo"
+  },
+  "keywords": [
+    "react-component",
+    "react-native",
+    "ios",
+    "android",
+    "SVG",
+    "chart",
+    "Area",
+    "Line",
+    "Bar",
+    "Scatter",
+    "Pie"
+  ],
+
+  "dependencies": {
+    "react": "16.0.0-alpha.12",
+    "react-native": "^0.46.1",
+    "prop-types": "^15.5.10",
+    "react-native-svg": "^5.3.2"
+  },
+  "devDependencies": {
+    "babel-preset-react-native-stage-0": "^1.0.1",
+    "react-test-renderer": "16.0.0-alpha.12",
+    "jest-expo": "~19.0.0"
+  }
+}
