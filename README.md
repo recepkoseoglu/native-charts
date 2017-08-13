@@ -1,7 +1,6 @@
 # Native Charts
 
-
-![alt tag](./images/image_1.png)
+With native-charts components, you can transform your data into graphs in your react-native applications.
 
 ## Installation
 
@@ -9,8 +8,15 @@
 npm install --save native-charts
 ```
 
-## AreaChart
+## Samples Charts
 
+![alt tag](./images/area.png)
+![alt tag](./images/bar.png)
+![alt tag](./images/line.png)
+![alt tag](./images/pie.png)
+![alt tag](./images/scatter.png)
+
+## AreaChart Usage
 
 ```js
 import {AreaChart} from "native-charts";
@@ -24,17 +30,17 @@ let data = [
 ];
 
 let meta = [
-    {dataKey: "public", name: "Public", unit: "piece", fill: "#F44336"},
-    {dataKey: "private", name: "Private", unit: "piece", fill: "red"},
-    {dataKey: "protected", name: "Protected", unit: "piece", fill: "blue"}
+    {dataKey: "public", name: "Public",  fill: "#F44336"},
+    {dataKey: "private", name: "Private",  fill: "red"},
+    {dataKey: "protected", name: "Protected", fill: "blue"}
 ];
 ...
 
-<AreaChart data={data} width={400} height={250} meta={meta}/>
+<AreaChart data={data} meta={meta}/>
 
 ```
 
-## BarChart
+## BarChart Usage
 
 
 ```js
@@ -49,18 +55,17 @@ let data = [
 ];
 
 let meta = [
-    {dataKey: "public", name: "Public", unit: "piece", fill: "blue"},
-    {dataKey: "private", name: "Private", unit: "piece", fill:"#F44336"},
-    {dataKey: "protected", name: "Protected", unit: "piece", fill: "red"}
+    {dataKey: "public", name: "Public", fill: "blue"},
+    {dataKey: "private", name: "Private", fill:"#F44336"},
+    {dataKey: "protected", name: "Protected", fill: "red"}
 ];
 ...
 
-<BarChart data={data} width={400} height={250} meta={meta}/>
+<BarChart data={data} meta={meta}/>
 
 ```
-![alt tag](./images/image_2.png)
 
-## LineChart
+## LineChart Usage
 
 
 ```js
@@ -75,18 +80,17 @@ let data = [
 ];
 
 let meta = [
-    {dataKey: "public", name: "Public", unit: "piece", fill:"red"},
-    {dataKey: "private", name: "Private", unit: "piece", fill:"blue"},
-    {dataKey: "protected", name: "Protected", unit: "piece", fill:"yellow"}
+    {dataKey: "public", name: "Public", fill:"red"},
+    {dataKey: "private", name: "Private", fill:"blue"},
+    {dataKey: "protected", name: "Protected", fill:"yellow"}
 ];
 ...
 
-<LineChart data={data} width={400} height={250} meta={meta}/>
+<LineChart data={data} meta={meta}/>
 
 ```
-![alt tag](./images/image_3.png)
 
-## ScatterChart
+## ScatterChart Usage
 
 
 ```js
@@ -108,33 +112,20 @@ const dataA = [
     {x: 110, y: 280, z: 200}
 ];
 
-const dataB = [
-    {x: 200, y: 260, z: 240},
-    {x: 240, y: 290, z: 220},
-    {x: 190, y: 290, z: 250},
-    {x: 198, y: 250, z: 210},
-    {x: 180, y: 280, z: 260},
-    {x: 210, y: 220, z: 230}];
-
-const data = [
-    {name: "A", data: dataA},
-    {name: "B", data: dataB}
-];
 
 let meta = [
-    {dataKey: "x", unit: "cm", name: "X", fill:"#F44336"},
-    {dataKey: "y", unit: "cm", name: "Y", fill:"red"},
-    {dataKey: "z", unit: "cm", name: "Z", fill:"blue"}
+    {dataKey: "x",  name: "X", fill:"#F44336"},
+    {dataKey: "y",  name: "Y", fill:"red"},
+    {dataKey: "z",  name: "Z", fill:"blue"}
 ];
 
 ...
 
-<ScatterChart data={data} width={400} height={250} meta={meta}/>
+<ScatterChart data={data}/>
 
 ```
 
-
-## PieChart
+## PieChart Usage
 
 ```js
 import {PieChart} from "native-charts";
@@ -145,21 +136,18 @@ let data = [
         value: 1500,
         label: "A",
         key: "0",
-        unit: "ms",
         fill:"#2196F3",
         children:[
                 {
                     value: 2500,
                     label: "A1",
                     key: "11",
-                    unit: "ms",
                     fill:"#F44336"
                 },
                 {
                     value: 3000,
                     label: "A2",
                     key: "12",
-                    unit: "ms",
                     fill:"red"
                 }
         ]
@@ -168,20 +156,41 @@ let data = [
         value: 2500,
         label: "B",
         key: "1",
-        unit: "ms",
         fill:"#F44336"
     },
     {
         value: 3000,
         label: "C",
         key: "3",
-        unit: "ms",
         fill:"red"
     }
 ];
 
 ...
 
-<PieChart size={200} data={data}/>
+<PieChart data={data}/>
 
-``
+```
+
+### Chart Props 
+
+| Name | Type | Default | Required |
+|------|------|---------|----------|
+| data | array | - | false |
+| meta | array | - | false |
+| title | string | - | false |
+
+#### Data Props 
+
+| Name | Type | Default | Required |
+|------|------|---------|----------|
+| name | string | - | true |
+| * | number | - | false |
+
+#### Meta Props 
+
+| Name | Type | Default | Required |
+|------|------|---------|----------|
+| dataKey | string | - | false |
+| name | string | - | false |
+| fill | string | - | false |

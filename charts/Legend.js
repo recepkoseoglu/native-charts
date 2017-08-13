@@ -1,48 +1,36 @@
-import React, {Component} from "react";
-import PropTypes from "prop-types";
-import {View, Text} from "react-native";
-import LegendStyle from "../styles/Legend";
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
+import {View, Text} from 'react-native';
+import {map, isEmpty} from 'lodash/fp';
+import Style from '../styles/Legend';
 
 
-class Legend extends Component {
-
-    render() {
-        let {style} = this.props;
-        return (
-            <View style={style.layout}>
-                {this.renderLegend()}
-            </View>
-        )
-    }
-
-    renderLegend = () => {
-        let {data, style} = this.props;
-        let arr = [];
-        for (let key in data) {
-            if (data.hasOwnProperty(key)) {
-                let legend = data[key];
-                arr.push(
-                    <View style={{backgroundColor: legend.fill}}>
-                        <Text style={style.text}>
-                            {legend.label}
-                        </Text>
-                    </View>)
+function Legend({data}) {
+    return (
+        <View style={Style.layout}>
+            {
+                map((legend) => {
+                    if (!isEmpty(legend)) {
+                        return (
+                            <View style={{backgroundColor: legend.fill}}>
+                                <Text style={Style.text}>
+                                    {legend.label}
+                                </Text>
+                            </View>
+                        );
+                    }
+                }, data)
             }
-        }
-        return arr;
-    };
-
+        </View>
+    );
 }
 
 Legend.propTypes = {
-    data: PropTypes.array,
-    style: LegendStyle
+    data: PropTypes.oneOfType([PropTypes.array]),
 };
 
 Legend.defaultProps = {
     data: Array,
-    style: new LegendStyle(),
 };
-
 
 export default Legend;

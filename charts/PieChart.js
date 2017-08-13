@@ -1,156 +1,166 @@
-import React, {Component} from "react";
-import PropTypes from "prop-types";
-import {Dimensions, View} from "react-native";
-import {Svg, Circle, Path} from "react-native-svg";
-import PieChartStyle from "../styles/PieChartStyle";
-import Legend from "./Legend";
+import React from 'react';
+import PropTypes from 'prop-types';
+import {View} from 'react-native';
+import {Svg, Path, Circle} from 'react-native-svg';
+import {colorByIndex} from '../utils/UColor';
+import {depthTree, radiusBy, pointZBy, pointXBy, pointYBy, calcBy, radBy} from '../utils/UFunc';
+import {sumBy, concat} from 'lodash/fp';
+import Style from '../styles/ChartStyle';
+import {Chart, SW} from './Chart';
 
+const ORIGIN = SW / 2;
 
-class PieChart extends Component {
+let DATA;
+let DEPTH = 0;
+let CIRCLE;
 
-    render() {
-        this.legends = [];
-        let {size, data} = this.props;
-        let depth = this.depthTree(data);
+const setup = (props) => {
+    DATA = props.data;
+    DEPTH = depthTree(DATA);
 
-        let c = 2 * depth + 1;
-        let mRadius = (((size - 1) / 2) / c) * ( c - depth - 1);
-
-        let root = depth > 1 ?
-            (<Circle
+    CIRCLE = (DEPTH > 1) &&
+        (
+            <Circle
                 fill="white"
-                cx={size / 2}
-                cy={size / 2}
-                r={mRadius}/>) :
-            undefined;
+                cx={SW / 2}
+                cy={SW / 2}
+                r={radiusBy(ORIGIN, DEPTH / 6, DEPTH - 1)}
+            />
+        );
+};
 
-        return (
-            <View style={{width: size}}>
-                <Svg height={size} width={size}>
-                    {this.renderPies(data, 360, 0, depth, depth - 1)}
-                    {root}
-                </Svg>
-                <Legend data={this.legends}/>
-            </View>
-        )
+class PieChart extends Chart {
+    constructor(props) {
+        super(props);
+        setup(props);
     }
 
-    renderPies(data, percentage, rotation, depth, depthIndex) {
-        if (!data || data.length <= 0) {
-            return [];
-        }
-        let piesArr = [],
-            sumValues = this.sumValues(data),
-            mRotation = rotation;
-
-        let c = 2 * depth + 1;
-        let mRadius = (((this.props.size - 1) / 2) / c) * ( c - depthIndex);
-
-        data.map(function (item: DataProps) {
-            let mPercentage = (percentage * item.value) / sumValues;
-            piesArr.push.apply(piesArr, this.renderPies(item.children, mPercentage, mRotation, depth, depthIndex - 1));
-            mRotation += mPercentage;
-        }.bind(this));
-
-        piesArr.push.apply(piesArr, this.createPath(data, mRadius, percentage, rotation, depth, depthIndex));
-        return piesArr;
+    componentWillReceiveProps(nextProps) {
+        setup(nextProps);
     }
 
-    createPath(data, radius, percentage, rotaion, depth, depthIndex) {
-        let sectors = [],
-            mRadius = radius,
-            origin = this.props.size / 2,
-            mRotation = rotaion,
-            max = this.sumValues(data);
+    componentWillUpdate(nextProps) {
+        setup(nextProps);
+    }
 
-        data.map(function (item, key) {
-            let value = item.value,
-                mPercentage = (percentage * value) / max,
-                isCircle = max === value,
-                aCalc = ( mPercentage > 180 ) ? 360 - mPercentage : mPercentage,
-                aRad = aCalc * Math.PI / 180,
-                z = Math.sqrt(2 * mRadius * mRadius - ( 2 * mRadius * mRadius * Math.cos(aRad) )),
-                x = aCalc <= 90 ? mRadius * Math.sin(aRad) : mRadius * Math.sin((180 - aCalc) * Math.PI / 180),
-                y = Math.sqrt(z * z - x * x),
-                Y = (origin - mRadius) + y,
-                X = mPercentage <= 180 ? origin + x : origin - x,
-                arcSweep = mPercentage <= 180 ? 0 : 1,
-                V = origin - mRadius,
-                fill = item.fill || this.randColor(key + z);
+    createPath({data, radius, percentage, rotation, depth, depthIndex}) {
+        const max = sumBy(o => o.value, data);
+        let mRotation = rotation;
+        const sectors = [];
 
+        data.map((item, key) => {
+            const mPercentage = (percentage * item.value) / max;
+            const aCalc = calcBy(mPercentage);
+            const aRad = radBy(aCalc);
+            const z = pointZBy(radius, aRad);
+            const x = pointXBy(radius, aRad, aCalc);
+            const y = pointYBy(z, x);
+            const Y = (ORIGIN - radius) + y;
+            const X = mPercentage <= 180 ? ORIGIN + x : ORIGIN - x;
+            const arcSweep = mPercentage <= 180 ? 0 : 1;
+            const fill = item.fill || colorByIndex(parseInt(key + z, 10));
             item.fill = fill;
             if (depthIndex === (depth - 1)) {
-                this.legends[item.key || item.label] = {fill: fill, label: item.label};
+                this.legends[item.key || item.label] = {fill, label: item.label};
             }
-            if (isCircle) {
+            if (max === item.value) {
                 sectors.push(
                     <Circle
                         key={item.key}
                         fill={fill}
-                        cx={origin}
-                        cy={origin}
-                        r={radius}/>);
+                        cx={ORIGIN}
+                        cy={ORIGIN}
+                        r={radius}
+                    />);
             }
             else {
                 sectors.push(
                     <Path
                         key={item.key}
-                        origin={origin + ', ' + origin}
+                        origin={`${ORIGIN}, ${ORIGIN}`}
                         rotate={mRotation}
-                        d={'M ' + origin + ' ' + origin + ' V ' + V + ' A ' + mRadius + ' ' + mRadius + ' 1 ' + arcSweep + ' 1 ' + X + '  ' + Y + " z"}
+                        d={`M ${ORIGIN} ${ORIGIN} V ${ORIGIN - radius} A ${radius} ${radius} 1 ${arcSweep} 1 ${X} ${Y} z`}
                         strokeWidth="0.5"
                         stroke="#fff"
                         strokeOpacity={0.5}
-                        fill={fill}>
-                    </Path>);
+                        fill={fill}
+                    />);
             }
-            mRotation = mRotation + mPercentage;
-        }.bind(this));
-        return sectors
-    }
-
-    depthTree(data) {
-        if (!data || data.length <= 0) {
-            return 0;
-        }
-        let depth = 0;
-        for (let i = 0; i < data.length; i++) {
-            depth = Math.max(depth, this.depthTree(data[i].children));
-        }
-        return 1 + depth;
-    }
-
-    sumValues(data) {
-        let max = 0;
-        data.map(function (item) {
-            let value = item.value;
-            max += value;
+            mRotation += mPercentage;
         });
-        return max;
+        return sectors;
     }
 
-
-    randColor(index) {
-        let colors = ["#F44336", "#2196F3", "#E91E63", "#00BCD4", "#673AB7", "#009688", "#3F51B5", "#4CAF50", "#FF9800", "#FF5722", "#FFC107"];
-        if (index !== undefined) {
-            return colors[parseInt(`${Math.abs(index % colors.length)}`) % (colors.length)];
+    renderPies({data, percentage, rotation, depth, depthIndex}) {
+        if (!data || data.length <= 0) {
+            return [];
         }
-        return colors[Math.floor(Math.random() * (colors.length - 1))];
+        let piesArr = [];
+        let mRotation = rotation;
+
+        const radius = radiusBy(SW, depth, depthIndex);
+
+        data.map(item => {
+            const mPercentage = (percentage * item.value) / sumBy(o => o.value, data);
+            piesArr = concat(piesArr,
+                this.renderPies(
+                    {
+                        data: item.children,
+                        percentage: mPercentage,
+                        rotation: mRotation,
+                        depth,
+                        depthIndex: depthIndex - 1,
+                    }));
+            mRotation += mPercentage;
+        });
+
+        piesArr = concat(piesArr,
+            this.createPath(
+                {
+                    data,
+                    radius,
+                    percentage,
+                    rotation,
+                    depth,
+                    depthIndex,
+                }));
+        return piesArr;
+    }
+
+    renderBody() {
+        this.legends = [];
+        return (
+            <View style={Style.view}>
+                <Svg
+                    width={SW}
+                    height={SW}
+                >
+                    {
+                        this.renderPies(
+                            {
+                                data: DATA,
+                                percentage: 360,
+                                rotation: 0,
+                                depth: DEPTH,
+                                depthIndex: DEPTH - 1,
+                            })
+                    }
+                    {CIRCLE}
+                </Svg>
+            </View>
+        );
     }
 }
 
-const {width} = Dimensions.get("window");
-
 PieChart.propTypes = {
-    data: PropTypes.array,
-    size: PropTypes.number,
-    style: PieChartStyle
+    data: PropTypes.oneOfType([PropTypes.array]),
+    title: PropTypes.string,
+
 };
 
 PieChart.defaultProps = {
     data: Array,
-    style: new PieChartStyle(),
-    size: width
+    title: undefined,
 };
 
 export default PieChart;
